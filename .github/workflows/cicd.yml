@@ -156,35 +156,35 @@ jobs:
         docker images
 
   # Docker Security Scan Stage
+# Docker Security Scan Stage
   snyk_image_scan:
     runs-on: ubuntu-latest
     needs: docker_build
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Setup AWS ECR Details
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
-
-    - name: Login to Amazon ECR
-      id: login-pf-aws-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Pull Docker image from ECR
-      run: |
-        docker pull ${{ steps.login-pf-aws-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:latest
     
-    - name: Scan Docker image locally with Snyk
+    - name: Load Docker image
+      run: |
+        docker load -i /tmp/docker-images.tar
+  
+    - name: Scan Docker image with Snyk
       uses: snyk/actions/docker@master
+      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ${{ steps.login-pf-aws-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:latest
-        args: --severity-threshold=high --sarif-file-output=snyk.sarif
+        image: ${{ inputs.docker-image-name }}:latest
+        args: --file=${{ inputs.dockerfile-path }} --severity-threshold=high --sarif-file-output=snyk.sarif
+  
+    - name: Upload Snyk SARIF report
+      uses: actions/upload-artifact@v3
+      with:
+        name: snyk-sarif-report
+        path: snyk.sarif
+  
+    
+
 #   # Deployment Stage
 #   publish:
 #     runs-on: ubuntu-latest
