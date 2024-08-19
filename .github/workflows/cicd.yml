@@ -182,7 +182,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-pf-aws-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ inputs.ecr-repo-name }}
       with:
-        image: ${{ steps.login-pf-aws-ecr.outputs.registry }}/${{ secrets.REPO_NAME }}:latest
+        image: ${{ steps.login-pf-aws-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:latest
         args: --file=Dockerfile --severity-threshold=high --sarif-file-output=snyk.sarif
 #   # Deployment Stage
 #   publish:
