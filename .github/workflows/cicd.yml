@@ -16,6 +16,10 @@ on:
         description: 'Path to the test file or directory'
         required: true
         type: string
+    secrets:
+      SNYK_TOKEN:
+        description: 'Snyk token for vulnerability scanning'
+        required: true
 
 jobs:
   # Build Stages
