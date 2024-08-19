@@ -177,15 +177,14 @@ jobs:
 
     - name: Tag Docker image
       run: |
-       docker tag appdev:latest ${{ inputs.docker-image-name }}:latest
-
+       docker tag ${{ inputs.docker-image-name }}:latest ${{ inputs.docker-image-name }}:1.2
     - name: Scan Docker image with Snyk
       uses: snyk/actions/docker@master
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ${{ inputs.docker-image-name }}:latest
+        image: ${{ inputs.docker-image-name }}:1.2
         args: --file=${{ inputs.dockerfile-path }} --severity-threshold=high --sarif-file-output=snyk.sarif
 
   
