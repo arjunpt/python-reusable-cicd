@@ -2,20 +2,20 @@ name: Python application
 
 
 on:
-    workflow_call:
-      inputs:
-        python-version:
-          description: 'Python version to set up'
-          required: true
-          type: string
-        requirements-path:
-          description: 'Path to the requirements.txt file'
-          required: true
-          type: string
-        test-path:
-          description: 'Path to the test file or directory'
-          required: true
-          type: string
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to set up'
+        required: true
+        type: string
+      requirements-path:
+        description: 'Path to the requirements.txt file'
+        required: true
+        type: string
+      test-path:
+        description: 'Path to the test file or directory'
+        required: true
+        type: string
 
 jobs:
   # Build Stages
