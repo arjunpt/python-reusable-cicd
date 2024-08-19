@@ -35,7 +35,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r ${{ inputs.requirements-path }}
 
-  # Lint Stage
+  # Lint Stages
   lint_test:
     runs-on: ubuntu-latest
     needs: build
