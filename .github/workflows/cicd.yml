@@ -161,13 +161,24 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker_build
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
     
+    - name: Download Docker image artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-image
+        path: /tmp
+    
+    - name: List files in /tmp
+      run: ls -l /tmp
+
     - name: Load Docker image
       run: |
         docker load -i /tmp/docker-images.tar
-  
+
+    - name: Tag Docker image
+      run: |
+       docker tag appdev:latest ${{ inputs.docker-image-name }}:latest
+
     - name: Scan Docker image with Snyk
       uses: snyk/actions/docker@master
       continue-on-error: true
@@ -176,12 +187,7 @@ jobs:
       with:
         image: ${{ inputs.docker-image-name }}:latest
         args: --file=${{ inputs.dockerfile-path }} --severity-threshold=high --sarif-file-output=snyk.sarif
-  
-    - name: Upload Snyk SARIF report
-      uses: actions/upload-artifact@v3
-      with:
-        name: snyk-sarif-report
-        path: snyk.sarif
+
   
     
 
