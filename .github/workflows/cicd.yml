@@ -82,20 +82,20 @@ jobs:
         pytest ${{ inputs.test-path }}
 
 
-#   # Security Scan Stage
-#   Snyk_scan:
-#     runs-on: ubuntu-latest
-#     needs: build
-#     steps:
-#     - name: Checkout repository
-#       uses: actions/checkout@v4
+  # Security Scan Stage
+  Snyk_scan:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-#     - name: Run Snyk to check for vulnerabilities
-#       uses: snyk/actions/python@master
-#       env:
-#         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#       with:
-#         command: code test
+    - name: Run Snyk to check for vulnerabilities
+      uses: snyk/actions/python@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        command: code test
 
 #   # Docker Build Stage
 #   docker_build:
