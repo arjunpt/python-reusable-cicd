@@ -287,7 +287,7 @@ jobs:
           apt-cache policy docker-ce
           sudo apt install docker-ce -y
           sudo chmod 666 /var/run/docker.sock
-          sudo usermod -aG docker ubuntu
+          sudo usermod -aG docker $USER
           sudo systemctl restart docker
         EOF
 
@@ -317,11 +317,9 @@ jobs:
             echo "AWS configuration:"
             aws configure list
             aws sts get-caller-identity
+
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 022499010678.dkr.ecr.us-east-1.amazonaws.com
       
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ steps.login-pf-aws-ecr.outputs.registry }}
-            docker pull ${{ steps.login-pf-aws-ecr.outputs.registry }}/${{ secrets.REPO_NAME }}:latest
-            docker run -d -p 5000:5000 ${{ steps.login-pf-aws-ecr.outputs.registry }}/${{ secrets.REPO_NAME }}:latest
-            docker ps
-          EOF
+          
       
       
