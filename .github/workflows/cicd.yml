@@ -318,7 +318,8 @@ jobs:
           echo "AWS configuration:"
           aws configure list
           aws sts get-caller-identity
-          sudo aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 022499010678.dkr.ecr.us-east-1.amazonaws.com
+          # sudo aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker run -d -p 5000:5000 $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker ps
