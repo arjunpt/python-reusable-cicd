@@ -294,18 +294,33 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
         AWS_REGION: us-east-1
+        AWS_DEFAULT_OUTPUT: json
       run: |
         ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
-        #   sudo apt install curl unzip -y
-        #   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        #   unzip awscliv2.zip
-        #   sudo ./aws/install
+          # sudo apt install curl unzip -y
+          # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          # unzip awscliv2.zip
+          # sudo ./aws/install
+          # export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+          # export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+          # export AWS_REGION=$AWS_REGION
+          echo "AWS CLI version:"
+          aws --version
+          sudo -i
           export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
           export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-          export AWS_REGION=$AWS_REGION
+          export AWS_REGION=us-east-1
+          export AWS_DEFAULT_OUTPUT=json
+          echo "AWS CLI version:"
+          aws --version
+          echo "Testing AWS credentials by listing S3 buckets:"
+          aws s3 ls
+          echo "AWS configuration:"
+          aws configure list
           aws sts get-caller-identity
-          sudo aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
-          sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          sudo docker run -d -p 5000:5000 $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          sudo docker ps
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 022499010678.dkr.ecr.us-east-1.amazonaws.com
+          # sudo aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker run -d -p 5000:5000 $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker ps
       
