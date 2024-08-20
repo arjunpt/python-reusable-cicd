@@ -280,7 +280,7 @@ jobs:
 
     - name: Save Docker image as tar file
       run: |
-        docker save -o image.tar $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker save -o /tmp/docker-images.tar ${{ inputs.docker-image-name }}:latest
         
     - name: Copy Docker image tar to EC2
       run: |
