@@ -52,6 +52,12 @@ on:
       EC2_USERNAME:
         description: 'EC2 username'
         required: true
+      ECR_REGISTRY: 
+        description: 'ECR REGISTRY'
+        required: true
+      ECR_REPOSITORY: 
+        description: 'ECR_REPOSITORY'
+        required: true
 
 jobs:
   # Build Stages
@@ -289,7 +295,7 @@ jobs:
 
     - name: Pull and run Docker image
       env:
-        ECR_REGISTRY: ${{ steps.login-pf-aws-ecr.outputs.registry }}
+        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
         AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
         AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
