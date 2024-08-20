@@ -326,6 +326,6 @@ jobs:
           aws sts get-caller-identity
           echo "Logging in to ECR..."
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY || { echo "ECR login failed."; exit 1; }
-          echo "Docker image name: $ECR_REGISTRY/$ECR_REPOSITORY:latest"
+          docker info | grep "Registry" || { echo "ECR login verification failed."; exit 1; }
           
       
