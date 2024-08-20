@@ -277,7 +277,7 @@ jobs:
         mask-password: 'true'
         
 
-    - name: Install Docker on Ubuntu EC2
+    - name: Install Docker on Ubuntu-EC2
       run: |
         ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
           sudo apt update -y
