@@ -317,8 +317,9 @@ jobs:
             echo "AWS configuration:"
             aws configure list
             aws sts get-caller-identity
-
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 022499010678.dkr.ecr.us-east-1.amazonaws.com
+            docker pull 022499010678.dkr.ecr.us-east-1.amazonaws.com/python:latest
+
       
           
       
