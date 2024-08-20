@@ -276,8 +276,15 @@ jobs:
         ECR_REPOSITORY: ${{ inputs.ecr-repo-name }}
       run: |
         docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
-        docker image
+        docker images
+
+    - name: Save Docker image as tar file
+      run: |
+        docker save -o image.tar $ECR_REGISTRY/$ECR_REPOSITORY:latest
         
+    - name: Copy Docker image tar to EC2
+      run: |
+        scp -i ~/.ssh/id_rsa image.tar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/
 
     - name: Install Docker on Ubuntu EC2
       run: |
@@ -311,9 +318,7 @@ jobs:
           export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
           export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
           export AWS_REGION=$AWS_REGION
-          aws sts get-caller-identity
-          sudo aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
-          sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          sudo docker run -d -p 5000:5000 $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          sudo docker load -i /home/${{ secrets.EC2_USERNAME }}/image.tar
+          sudo docker run -d --name my-container $ECR_REGISTRY/$ECR_REPOSITORY:latest
           sudo docker ps
       
