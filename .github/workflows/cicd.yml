@@ -28,6 +28,8 @@ on:
         description: 'AWS ECR repository name'
         required: true
         type: string
+
+
     secrets:
       SNYK_TOKEN:
         description: 'Snyk token for vulnerability scanning'
@@ -40,6 +42,15 @@ on:
         required: true
       AWS_REGION:
         description: 'AWS region for ECR'
+        required: true
+      EC2_HOST:
+        description: 'EC2 host for SSH deployment'
+        required: true
+      EC2_SSH_KEY:
+        description: 'SSH private key for EC2'
+        required: true
+      EC2_USERNAME:
+        description: 'EC2 username'
         required: true
 
 jobs:
@@ -234,67 +245,67 @@ jobs:
         docker tag ${{ inputs.docker-image-name }}:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-#   # Post-Deployment Tasks Stage
-#   deploy:
-#     runs-on: ubuntu-latest
-#     needs: publish
-#     steps:
-#     - name: Set up SSH key  
-#       run: |
-#         mkdir -p ~/.ssh
-#         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-#         chmod 600 ~/.ssh/id_rsa
-#         ssh-keyscan ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+  # Post-Deployment Tasks Stage
+  deploy:
+    runs-on: ubuntu-latest
+    needs: publish
+    steps:
+    - name: Set up SSH key  
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-#     - name: Setup AWS ECR Details
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-#         aws-region: ${{ secrets.AWS_REGION }}
+    - name: Setup AWS ECR Details
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-#     - name: Login to Amazon ECR
-#       id: login-pf-aws-ecr
-#       uses: aws-actions/amazon-ecr-login@v1
-#       with:
-#         mask-password: 'true'
+    - name: Login to Amazon ECR
+      id: login-pf-aws-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        mask-password: 'true'
         
 
-#     - name: Install Docker on Ubuntu EC2
-#       run: |
-#         ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
-#         sudo apt update -y
-#         sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
-#         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-#         sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-#         apt-cache policy docker-ce
-#         sudo apt install docker-ce -y
-#         sudo chmod 666 /var/run/docker.sock
-#         sudo usermod -aG docker $USER
-#         sudo systemctl restart docker
-#         EOF
+    - name: Install Docker on Ubuntu EC2
+      run: |
+        ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
+        sudo apt update -y
+        sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+        sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+        apt-cache policy docker-ce
+        sudo apt install docker-ce -y
+        sudo chmod 666 /var/run/docker.sock
+        sudo usermod -aG docker $USER
+        sudo systemctl restart docker
+        EOF
 
     
 
-#     - name: Pull and run Docker image
-#       env:
-#         ECR_REGISTRY: ${{ steps.login-pf-aws-ecr.outputs.registry }}
-#         ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
-#         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-#         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
-#         AWS_REGION: us-east-1
-#       run: |
-#         ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
-#           # sudo apt install curl unzip -y
-#           # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-#           # unzip awscliv2.zip
-#           # sudo ./aws/install
-#           export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-#           export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-#           export AWS_REGION=$AWS_REGION
-#           aws sts get-caller-identity
-#           sudo aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
-#           sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
-#           sudo docker run -d -p 5000:5000 $ECR_REGISTRY/$ECR_REPOSITORY:latest
-#           sudo docker ps
+    - name: Pull and run Docker image
+      env:
+        ECR_REGISTRY: ${{ steps.login-pf-aws-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+        AWS_REGION: us-east-1
+      run: |
+        ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
+          # sudo apt install curl unzip -y
+          # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          # unzip awscliv2.zip
+          # sudo ./aws/install
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+          export AWS_REGION=$AWS_REGION
+          aws sts get-caller-identity
+          sudo aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
+          sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          sudo docker run -d -p 5000:5000 $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          sudo docker ps
       
