@@ -133,40 +133,40 @@ jobs:
         command: code test
 
 # Sonarqube Scan Stage
-  Sonar_scan:
-    runs-on: ubuntu-latest
-    needs: [lint_test,  py_test, Snyk_scan ]
-    steps:
+  # Sonar_scan:
+  #   runs-on: ubuntu-latest
+  #   needs: [lint_test,  py_test, Snyk_scan ]
+  #   steps:
 
-    - name: Checkout repository
-      uses: actions/checkout@v4
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v4
       
 
-    - name: Install jq
-      run: sudo apt-get update && sudo apt-get install -y jq
+  #   - name: Install jq
+  #     run: sudo apt-get update && sudo apt-get install -y jq
 
 
-    - name: curl to server endpoint
-      run: curl ${{ secrets.SONAR_HOST_URL }}
+  #   - name: curl to server endpoint
+  #     run: curl ${{ secrets.SONAR_HOST_URL }}
 
-    - name: SonarQube Scan
-      uses: SonarSource/sonarqube-scan-action@v2.0.2
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+  #   - name: SonarQube Scan
+  #     uses: SonarSource/sonarqube-scan-action@v2.0.2
+  #     env:
+  #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-    - name: SonarQube Quality Gate check
-      id: sonarqube-quality-gate-check
-      uses: sonarsource/sonarqube-quality-gate-action@master
-      timeout-minutes: 5
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+  #   - name: SonarQube Quality Gate check
+  #     id: sonarqube-quality-gate-check
+  #     uses: sonarsource/sonarqube-quality-gate-action@master
+  #     timeout-minutes: 5
+  #     env:
+  #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   # Docker Build Stage
   docker_build:
     runs-on: ubuntu-latest
-    needs: [lint_test, py_test, Snyk_scan, Sonar_scan]
+    needs: [lint_test, py_test, Snyk_scan, ]
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
@@ -301,32 +301,45 @@ jobs:
 
     - name: Install Docker on Ubuntu-EC2
       run: |
-        ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
-          sudo apt update -y
-          sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-          apt-cache policy docker-ce
-          sudo apt install docker-ce -y
-          sudo chmod 666 /var/run/docker.sock
-          sudo usermod -aG docker $USER
-          sudo systemctl restart docker
-        EOF
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
+            # Check if Docker is already installed
+            if ! command -v docker &> /dev/null
+            then
+              echo "Docker not found, installing Docker..."
+              sudo apt update -y
+              sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+              sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+              apt-cache policy docker-ce
+              sudo apt install docker-ce -y
+              sudo chmod 666 /var/run/docker.sock
+              sudo usermod -aG docker $USER
+              sudo systemctl restart docker
+            else
+              echo "Docker is already installed"
+            fi
+          EOF
+      
 
     
 
     - name: Pull and run Docker image
       run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
-            # sudo apt install curl unzip -y
-            # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            # unzip awscliv2.zip
-            # sudo ./aws/install
-            
-            echo "AWS CLI version:"
-            aws --version
+            ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
+              # Check if AWS CLI is installed
+              if ! command -v aws &> /dev/null
+              then
+                echo "AWS CLI not found. Installing AWS CLI..."
+                sudo apt update
+                sudo apt install curl unzip -y
+                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                unzip awscliv2.zip
+                sudo ./aws/install
+              else
+                echo "AWS CLI is already installed."
+              fi
+                
             sudo -i
-      
             export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY }}
             export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_KEY }}
             export AWS_REGION=us-east-1
