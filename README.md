@@ -40,10 +40,15 @@ EC2_USERNAME
 SONAR_TOKEN
 SONAR_HOST_URL
 
+Architecture:
 
 ![image](https://github.com/user-attachments/assets/aac8d41a-1d6f-4fb5-8204-bb440c225325)
 
 
+
+
+folder structure:
+![image](https://github.com/user-attachments/assets/1e245629-0b61-4e55-88ec-27912e527c1f)
 
 
 
