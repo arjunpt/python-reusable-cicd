@@ -60,6 +60,12 @@ on:
       EC2_USERNAME:
         description: 'EC2 username'
         required: true
+      SONAR_TOKEN:
+        description: 'sonar token for authentication'
+        required: true
+      SONAR_HOST_URL:
+        description: 'sonarqube URL endpoint'
+        required: true
       
       
       
@@ -126,6 +132,37 @@ jobs:
       with:
         command: code test
 
+# Sonarqube Scan Stage
+  Sonar_scan:
+    runs-on: ubuntu-latest
+    needs: [lint_test,  py_test, Snyk_scan ]
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+
+
+    - name: curl to server endpoint
+      run: curl http://18.234.82.32:9000
+
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@v2.0.2
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+    - name: SonarQube Quality Gate check
+      id: sonarqube-quality-gate-check
+      uses: sonarsource/sonarqube-quality-gate-action@master
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
   # Docker Build Stage
   docker_build:
     runs-on: ubuntu-latest
@@ -182,7 +219,7 @@ jobs:
       run: |
         docker load -i /tmp/docker-images.tar
 
-        
+
     - name: Scan Docker image with Snyk
       uses: snyk/actions/docker@master
       continue-on-error: true
