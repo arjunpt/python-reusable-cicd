@@ -28,6 +28,18 @@ on:
         description: 'AWS ECR repository name'
         required: true
         type: string
+      ECR_REGISTRY:
+        required: true
+        type: string
+        description: 'ECR_REGISTRY'
+      IMAGE_NAME:
+        required: true
+        type: string
+        description: 'IMAGE_NAME'
+      IMAGE_TAG:
+        required: true
+        type: string
+        description: 'IMAGE_TAG'
 
 
     secrets:
@@ -52,12 +64,9 @@ on:
       EC2_USERNAME:
         description: 'EC2 username'
         required: true
-      ECR_REGISTRY: 
-        description: 'ECR REGISTRY'
-        required: true
-      ECR_REPOSITORY: 
-        description: 'ECR_REPOSITORY'
-        required: true
+      
+      
+      
 
 jobs:
   # Build Stages
@@ -312,15 +321,17 @@ jobs:
       
             echo "AWS CLI version:"
             aws --version
-            echo "Testing AWS credentials by listing S3 buckets:"
+            echo "Testing AWS credentials by listing S3 buckets"
             aws s3 ls
             echo "AWS configuration:"
             aws configure list
             aws sts get-caller-identity
+            #aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ inputs.ECR_REGISTRY }}
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 022499010678.dkr.ecr.us-east-1.amazonaws.com
-            docker pull 022499010678.dkr.ecr.us-east-1.amazonaws.com/python:latest
-
-      
+            docker pull ${{ inputs.ECR_REGISTRY }}/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
+            # docker pull 022499010678.dkr.ecr.us-east-1.amazonaws.com/python:latest
+            # docker run -d -p 5000:5000 022499010678.dkr.ecr.us-east-1.amazonaws.com/python:latest 
+            docker run -d -p 5000:5000 ${{ inputs.ECR_REGISTRY }}/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
           
       
       
