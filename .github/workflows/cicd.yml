@@ -255,10 +255,10 @@ jobs:
     - name: Tag and push Docker image to ECR
       env:
         ECR_REGISTRY: ${{ steps.login-pf-aws-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ inputs.ecr-repo-name }}
+        IMAGE_NAME: ${{ inputs.docker-image-name }}
       run: |
-        docker tag ${{ inputs.docker-image-name }}:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker tag $IMAGE_NAME:latest $ECR_REGISTRY/$IMAGE_NAME:latest
+          docker push $ECR_REGISTRY/$IMAGE_NAME:latest
 
   # Post-Deployment Tasks Stage
   deploy:
