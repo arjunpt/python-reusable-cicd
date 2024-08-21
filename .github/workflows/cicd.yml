@@ -328,6 +328,7 @@ jobs:
             # docker pull 022499010678.dkr.ecr.us-east-1.amazonaws.com/python:latest
             # docker run -d -p 5000:5000 022499010678.dkr.ecr.us-east-1.amazonaws.com/python:latest 
             docker run -d -p 5000:5000 ${{ inputs.ECR_REGISTRY }}/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
+            docker ps
           
       
       
