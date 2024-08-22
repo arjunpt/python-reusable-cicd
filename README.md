@@ -11,7 +11,7 @@ Runs unit tests using pytest to ensure the core functionalities of the applicati
 3. Code Linting (flake8)
 Lints the code using flake8 to verify adherence to PEP8 coding standards, identifying any syntax or style issues.
 4. Dependency Security Scan (Snyk)
-Performs a security scan of the application's dependencies using Snyk to detect vulnerabilities in the requirements.txt file.
+Performs a security scan of the application's dependencies using Snyk to detect vulnerabilities in the code.
 5. Static Code Analysis (SonarQube)
 Integrates with SonarQube to perform static code analysis. This step checks for code smells, bugs, and potential issues in the codebase.
 6. Docker Image Creation
